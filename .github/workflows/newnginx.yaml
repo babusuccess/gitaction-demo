@@ -1,4 +1,4 @@
-name: Setup NGINX on Master Node
+name: Setup NGINX on all nodes
 
 on:
   push:
@@ -13,12 +13,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install NGINX on master node
+      - name: Install NGINX on all nodes
         run: |
-          echo "Installing NGINX on 192.168.8.100 as master..."
-          ssh -o StrictHostKeyChecking=no master@192.168.8.100 "
-            sudo apt update -y &&
-            sudo apt install -y nginx &&
-            sudo systemctl enable --now nginx &&
-            echo 'This is GitHub Actions NGINX server' | sudo tee /var/www/html/index.html
-          "
+          set -e  # Exit on any error
+
+          for ip in 192.168.8.100 192.168.8.101 192.168.8.102; do
+            # Map IP to correct SSH user
+            case $ip in
+              192.168.8.100) user="master" ;;
+              192.168.8.101) user="worker" ;;
+              192.168.8.102) user="worker2" ;;
+              *) echo "Unknown IP $ip"; exit 1 ;;
+            esac
+
+            echo "Installing NGINX on $ip as $user..."
+
+            ssh -tt -o StrictHostKeyChecking=no $user@$ip << 'EOF'
+              set -e
+              export DEBIAN_FRONTEND=noninteractive
+
+              echo "Connected as: $(whoami)"
+
+              sudo -n apt update -y
+              sudo -n apt install -y nginx
+              sudo -n systemctl enable --now nginx
+              echo "This is GitHub Actions NGINX server" | sudo -n tee /var/www/html/index.html
+
+              echo "✅ NGINX installed successfully"
+EOF
+          done
