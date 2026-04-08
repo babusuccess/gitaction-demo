@@ -5,21 +5,20 @@ on:
 
 jobs:
   setup-nginx:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # runs directly on 192.168.8.100
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install NGINX on all VMware VMs
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: 192.168.8.100,192.168.8.101,192.168.8.102
-          username: root
-          password: 123
-          script: |
-            apt update
-            apt install -y nginx
-            systemctl start nginx
-            systemctl enable nginx
-            echo "This is GitHub Actions NGINX server" > /var/www/html/index.html
+      - name: Install NGINX on all local VMs
+        run: |
+          for ip in 192.168.8.100 192.168.8.101 192.168.8.102; do
+            sshpass -p "123" ssh -o StrictHostKeyChecking=no root@$ip "
+              apt update &&
+              apt install -y nginx &&
+              systemctl start nginx &&
+              systemctl enable nginx &&
+              echo 'This is GitHub Actions NGINX server' > /var/www/html/index.html
+            "
+          done
