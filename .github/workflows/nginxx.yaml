@@ -1,0 +1,15 @@
+#!/bin/bash
+# Self-hosted runner setup
+
+# 1. Create folder and move into it
+mkdir -p ~/actions-runner && cd ~/actions-runner
+
+# 2. Download latest runner
+curl -o actions-runner-linux-x64.tar.gz -L https://github.com/actions/runner/releases/latest/download/actions-runner-linux-x64.tar.gz
+tar xzf actions-runner-linux-x64.tar.gz
+
+# 3. Configure runner (replace with your repo and token)
+./config.sh --url https://github.com/YOUR_REPO --token YOUR_TOKEN
+
+# 4. Start runner in background
+./run.sh &
