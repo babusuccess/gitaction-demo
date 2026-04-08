@@ -1,0 +1,32 @@
+name: Install and Run NGINX
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-nginx:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install NGINX
+        run: |
+          sudo apt update
+          sudo apt install -y nginx
+
+      - name: Start NGINX Service
+        run: |
+          sudo systemctl start nginx
+          sudo systemctl enable nginx
+
+      - name: Update HTML Page
+        run: |
+          echo "This is GitHub Actions NGINX server" | sudo tee /var/www/html/index.html
+
+      - name: Check NGINX Status
+        run: |
+          sudo systemctl status nginx
