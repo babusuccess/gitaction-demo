@@ -1,3 +1,5 @@
+name: Setup NGINX
+
 on:
   push:
     branches:
@@ -5,20 +7,25 @@ on:
 
 jobs:
   setup-nginx:
-    runs-on: self-hosted  # runs directly on 192.168.8.100
+    runs-on: self-hosted  # Your self-hosted runner
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install NGINX on all local VMs
+      - name: Install NGINX on all nodes
         run: |
           for ip in 192.168.8.100 192.168.8.101 192.168.8.102; do
-            sshpass -p "123" ssh -o StrictHostKeyChecking=no root@$ip "
-              apt update &&
-              apt install -y nginx &&
-              systemctl start nginx &&
-              systemctl enable nginx &&
-              echo 'This is GitHub Actions NGINX server' > /var/www/html/index.html
+            # Map IP to correct user
+            if [ "$ip" = "192.168.8.100" ]; then user="master"; fi
+            if [ "$ip" = "192.168.8.101" ]; then user="worker"; fi
+            if [ "$ip" = "192.168.8.102" ]; then user="worker2"; fi
+
+            ssh -o StrictHostKeyChecking=no $user@$ip "
+              sudo apt update &&
+              sudo apt install -y nginx &&
+              sudo systemctl start nginx &&
+              sudo systemctl enable nginx &&
+              echo 'This is GitHub Actions NGINX server' | sudo tee /var/www/html/index.html
             "
           done
