@@ -1,0 +1,24 @@
+name: Setup NGINX on Master Node
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-nginx:
+    runs-on: self-hosted  # Your self-hosted runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install NGINX on master node
+        run: |
+          echo "Installing NGINX on 192.168.8.100 as master..."
+          ssh -o StrictHostKeyChecking=no master@192.168.8.100 "
+            sudo apt update -y &&
+            sudo apt install -y nginx &&
+            sudo systemctl enable --now nginx &&
+            echo 'This is GitHub Actions NGINX server' | sudo tee /var/www/html/index.html
+          "
