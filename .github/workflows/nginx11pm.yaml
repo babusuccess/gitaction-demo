@@ -1,32 +1,24 @@
-name: Setup NGINX on all nodes
+- name: Install NGINX on all nodes
+  run: |
+    for ip in 192.168.8.100 192.168.8.101 192.168.8.102; do
+      
+      case $ip in
+        192.168.8.100) user="master" ;;
+        192.168.8.101) user="worker" ;;
+        192.168.8.102) user="worker2" ;;
+      esac
 
-on:
-  push:
-    branches:
-      - main
+      echo "Installing NGINX on $ip as $user..."
 
-jobs:
-  setup-nginx:
-    runs-on: self-hosted  # Your self-hosted runner
+      ssh -tt -o StrictHostKeyChecking=no $user@$ip << 'EOF'
+        whoami
+        sudo -n true || echo "❌ sudo still requires password"
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt update -y
+        sudo apt install -y nginx
+        sudo systemctl enable --now nginx
+        echo "This is GitHub Actions NGINX server" | sudo tee /var/www/html/index.html
+      EOF
 
-      - name: Install NGINX on all nodes
-        run: |
-          for ip in 192.168.8.100 192.168.8.101 192.168.8.102; do
-            # Map IP to correct user
-            if [ "$ip" = "192.168.8.100" ]; then user="master"; fi
-            if [ "$ip" = "192.168.8.101" ]; then user="worker"; fi
-            if [ "$ip" = "192.168.8.102" ]; then user="worker2"; fi
-
-            echo "Installing NGINX on $ip as $user..."
-
-            ssh -o StrictHostKeyChecking=no $user@$ip "
-              sudo apt update -y &&
-              sudo apt install -y nginx &&
-              sudo systemctl enable --now nginx &&
-              echo 'This is GitHub Actions NGINX server' | sudo tee /var/www/html/index.html
-            "
-          done
+    done
