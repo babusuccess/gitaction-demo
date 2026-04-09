@@ -1,3 +1,4 @@
+
 name: Setup NGINX on all nodes
 
 on:
@@ -7,7 +8,7 @@ on:
 
 jobs:
   setup-nginx:
-    runs-on: self-hosted  # Your self-hosted runner
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
@@ -15,10 +16,9 @@ jobs:
 
       - name: Install NGINX on all nodes
         run: |
-          set -e  # Exit on any error
+          set -e
 
           for ip in 192.168.8.100 192.168.8.101 192.168.8.102; do
-            # Map IP to correct SSH user
             case $ip in
               192.168.8.100) user="master" ;;
               192.168.8.101) user="worker" ;;
@@ -28,16 +28,16 @@ jobs:
 
             echo "Installing NGINX on $ip as $user..."
 
-            ssh -tt -o StrictHostKeyChecking=no $user@$ip << 'EOF'
+            ssh -tt -o StrictHostKeyChecking=no $user@$ip << EOF
               set -e
               export DEBIAN_FRONTEND=noninteractive
 
               echo "Connected as: $(whoami)"
 
-              sudo -n apt update -y
-              sudo -n apt install -y nginx
-              sudo -n systemctl enable --now nginx
-              echo "This is GitHub Actions NGINX server" | sudo -n tee /var/www/html/index.html
+              sudo apt update -y
+              sudo apt install -y nginx
+              sudo systemctl enable --now nginx
+              echo "This is GitHub Actions NGINX server" | sudo tee /var/www/html/index.html
 
               echo "✅ NGINX installed successfully"
 EOF
