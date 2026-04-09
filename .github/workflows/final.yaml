@@ -1,4 +1,4 @@
-name: Build and Deploy to NGINX
+name: Build and Deploy to NGINX (Local Server)
 
 on:
   push:
@@ -7,8 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
-    environment: dev   # your environment name
+    runs-on: self-hosted   # 👈 IMPORTANT (runs on your server)
 
     steps:
       # Step 1: Checkout code
@@ -23,37 +22,23 @@ jobs:
           echo "<html><h1>Welcome to Kubernetes Eng Babu</h1></html>" > build/index.html
           ls -la build
 
-      # Step 3: Copy files to server
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: 192.168.8.100
-          username: master
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "build/*"
-          target: "/home/master/deploy/"
+      # Step 3: Deploy to NGINX
+      - name: Deploy to NGINX
+        run: |
+          echo "Installing NGINX if not present..."
+          sudo apt update
+          sudo apt install -y nginx
 
-      # Step 4: Setup NGINX and Deploy
-      - name: Setup NGINX and Deploy
-        uses: appleboy/ssh-action@v1
-        with:
-          host: 192.168.8.100
-          username: master
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "Updating system..."
-            sudo apt update
+          echo "Copying HTML to NGINX directory..."
+          sudo cp build/index.html /var/www/html/index.html
 
-            echo "Installing NGINX..."
-            sudo apt install -y nginx
+          echo "Setting permissions..."
+          sudo chmod 644 /var/www/html/index.html
 
-            echo "Copying HTML to NGINX root..."
-            sudo cp /home/master/deploy/index.html /var/www/html/index.html
+          echo "Restarting NGINX..."
+          sudo systemctl restart nginx
 
-            echo "Restarting NGINX..."
-            sudo systemctl restart nginx
+          echo "Checking NGINX status..."
+          sudo systemctl status nginx --no-pager
 
-            echo "Checking NGINX status..."
-            sudo systemctl status nginx --no-pager
-
-            echo "Deployment completed successfully!"
+          echo "Deployment completed successfully!"
