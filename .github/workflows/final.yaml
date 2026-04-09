@@ -1,4 +1,4 @@
-name: Build and Deploy to NGINX (Local Server)
+name: Build and Deploy to NGINX
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted   # 👈 IMPORTANT (runs on your server)
+    runs-on: self-hosted   # 👈 runs on your local server
 
     steps:
       # Step 1: Checkout code
@@ -22,23 +22,30 @@ jobs:
           echo "<html><h1>Welcome to Kubernetes Eng Babu</h1></html>" > build/index.html
           ls -la build
 
-      # Step 3: Deploy to NGINX
-      - name: Deploy to NGINX
+      # Step 3: Install NGINX (if not installed)
+      - name: Install NGINX
         run: |
-          echo "Installing NGINX if not present..."
           sudo apt update
           sudo apt install -y nginx
 
-          echo "Copying HTML to NGINX directory..."
+      # Step 4: Deploy to NGINX
+      - name: Deploy HTML to NGINX
+        run: |
+          echo "Deploying to NGINX..."
           sudo cp build/index.html /var/www/html/index.html
-
-          echo "Setting permissions..."
           sudo chmod 644 /var/www/html/index.html
 
-          echo "Restarting NGINX..."
+      # Step 5: Restart NGINX
+      - name: Restart NGINX
+        run: |
           sudo systemctl restart nginx
 
-          echo "Checking NGINX status..."
+      # Step 6: Check NGINX Status
+      - name: Check NGINX Status
+        run: |
           sudo systemctl status nginx --no-pager
 
-          echo "Deployment completed successfully!"
+      # Step 7: Done
+      - name: Done
+        run: echo "Deployment completed successfully!"
+
