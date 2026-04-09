@@ -1,0 +1,36 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Step 2: Build project
+      - name: Build project
+        run: |
+          echo "Building project..."
+          mkdir -p build
+          echo "Hello from build!" > build/index.html
+          ls -la build  # verify build folder
+
+      # Step 3: Deploy to remote server
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 192.168.8.100
+          username: master
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Deploying files..."
+            mkdir -p ~/deploy
+            cp -r build/* ~/deploy/
+            echo "Deployment completed!"
