@@ -22,15 +22,16 @@ jobs:
           echo "Hello from build!" > build/index.html
           ls -la build  # verify build folder
 
-      # Step 3: Deploy to remote server
+      # Step 3: Deploy to remote server using password
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: 192.168.8.100
           username: master
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: 123
           script: |
             echo "Deploying files..."
             mkdir -p ~/deploy
             cp -r build/* ~/deploy/
             echo "Deployment completed!"
+
