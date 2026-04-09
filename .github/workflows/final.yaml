@@ -1,0 +1,59 @@
+name: Build and Deploy to NGINX
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: dev   # your environment name
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Step 2: Build HTML
+      - name: Build HTML
+        run: |
+          echo "Building HTML..."
+          mkdir -p build
+          echo "<html><h1>Welcome to Kubernetes Eng Babu</h1></html>" > build/index.html
+          ls -la build
+
+      # Step 3: Copy files to server
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 192.168.8.100
+          username: master
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "build/*"
+          target: "/home/master/deploy/"
+
+      # Step 4: Setup NGINX and Deploy
+      - name: Setup NGINX and Deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 192.168.8.100
+          username: master
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Updating system..."
+            sudo apt update
+
+            echo "Installing NGINX..."
+            sudo apt install -y nginx
+
+            echo "Copying HTML to NGINX root..."
+            sudo cp /home/master/deploy/index.html /var/www/html/index.html
+
+            echo "Restarting NGINX..."
+            sudo systemctl restart nginx
+
+            echo "Checking NGINX status..."
+            sudo systemctl status nginx --no-pager
+
+            echo "Deployment completed successfully!"
