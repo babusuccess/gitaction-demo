@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     environment {
         IMAGE_NAME = "babupalavesam/myapp:latest"
     }
@@ -9,7 +13,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/babusuccess/gitaction-demo.git'
+                git branch: 'main', url: 'https://github.com/babusuccess/gitaction-demo.git'
             }
         }
 
