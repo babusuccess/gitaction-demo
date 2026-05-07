@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "IMAGE_NAME = "babugyadav/nginx:mytestimage"
+        IMAGE_NAME = "babugyadav/nginx:mytestimage"
     }
 
     stages {
