@@ -5,7 +5,7 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t myapp:latest .'
+                sh 'docker build -t YOUR_DOCKERHUB_USERNAME/myapp:latest .'
             }
         }
 
@@ -13,7 +13,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
                     sh '''
-                        echo $PASS | docker login -u $USER --password-stdin
+                        echo "$PASS" | docker login -u "$USER" --password-stdin
                     '''
                 }
             }
@@ -21,7 +21,7 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                sh 'docker push myapp:latest'
+                sh 'docker push YOUR_DOCKERHUB_USERNAME/myapp:latest'
             }
         }
     }
