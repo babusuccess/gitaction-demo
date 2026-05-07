@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    options {
-        skipDefaultCheckout(true)
-    }
-
     environment {
         IMAGE_NAME = "babugyadav/nginx:mytestimage"
     }
@@ -25,7 +21,11 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-cred',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
                     sh 'echo $PASS | docker login -u $USER --password-stdin'
                 }
             }
@@ -34,6 +34,12 @@ pipeline {
         stage('Docker Push') {
             steps {
                 sh 'docker push $IMAGE_NAME'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f deployment.yaml'
             }
         }
     }
