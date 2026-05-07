@@ -3,18 +3,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout SCM') {
-            steps {
-                git 'https://github.com/your-repo.git'
-            }
-        }
-
-        stage('Clone Code') {
-            steps {
-                sh 'echo "Code already checked out"'
-            }
-        }
-
         stage('Docker Build') {
             steps {
                 sh 'docker build -t myapp:latest .'
@@ -36,12 +24,5 @@ pipeline {
                 sh 'docker push myapp:latest'
             }
         }
-
-        stage('Kubernetes Deploy') {
-            steps {
-                sh 'kubectl apply -f deployment.yaml'
-            }
-        }
-
     }
 }
