@@ -4,7 +4,7 @@ pipeline {
 
     environment {
 
-        IMAGE_NAME = "babugyadav/nginx:mytestimage"
+        IMAGE_NAME = "babugyadav/nginx"
         TAG = "mytestimage"
     }
 
