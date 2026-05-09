@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'VERSION', defaultValue: 'v1', description: 'Docker Image Version Tag')
+    }
+
     environment {
-        IMAGE_NAME = "babugyadav/nginx:mytestimage"
+        IMAGE_NAME = "babugyadav/nginx"
     }
 
     stages {
@@ -15,7 +19,7 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh "docker build -t $IMAGE_NAME:${params.VERSION} ."
             }
         }
 
@@ -33,13 +37,22 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                sh 'docker push $IMAGE_NAME'
+                sh "docker push $IMAGE_NAME:${params.VERSION}"
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'
+                sh """
+                sed -i 's|image: .*|image: $IMAGE_NAME:${params.VERSION}|g' deployment.yaml
+                kubectl apply -f deployment.yaml
+                """
+            }
+        }
+
+        stage('Restart Deployment') {
+            steps {
+                sh "kubectl rollout restart deployment babu-app"
             }
         }
     }
